@@ -18,3 +18,7 @@ def get_db():
         yield db
     finally:
         db.close()
+'''
+This give you 
+-> Engine -> Session factory -> Base model class -> Dependency injection function
+'''
