@@ -2,9 +2,8 @@ from pydantic import BaseModel, EmailStr, field_validator
 from datetime import datetime
 
 class UserBase(BaseModel):
-    full_name: str
     email: EmailStr
-    username: str
+    username: str | None 
     
 
 class CreateUser(UserBase):
