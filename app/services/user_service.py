@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 '''why this architecture for tje real production system'''
 '''
 What the service should receive 
--> db: Session - so it can call the repository
--> user_data: CreateUser - schema from the API layer
+-> db: Session - so it can call the repository, need to interact with repo
+-> user_data: CreateUser - schema from the API layer, comes from API validation layer
 What the service should return 
 -> UserResponse (or UserRead) - a response schema, not ORM
 '''
