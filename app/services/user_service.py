@@ -14,6 +14,8 @@ pwd_context = CryptContext(
     schemes=["argon2"],
     deprecated="auto"
 )
+def hash_password(password: str):
+    return hash_password(password)
 
 def register_user(db: Session, user_data: CreateUser) -> UserResponse:
     existing_user= user_repo.get_by_email(db, user_data.email)
