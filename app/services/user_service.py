@@ -15,7 +15,7 @@ pwd_context = CryptContext(
     deprecated="auto"
 )
 def hash_password(password: str):
-    return hash_password(password)
+    return pwd_context.hash(password)
 
 def register_user(db: Session, user_data: CreateUser) -> UserResponse:
     existing_user= user_repo.get_by_email(db, user_data.email)
@@ -27,7 +27,8 @@ def register_user(db: Session, user_data: CreateUser) -> UserResponse:
     user = user_repo.create_user(
         db,
         email=user_data.email,
-        password_hash=hashed_password
+        username=user_data.username,
+        password_hashed=hashed_password,
     )
     return UserResponse.model_validate(user)
 
