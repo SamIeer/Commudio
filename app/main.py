@@ -2,8 +2,11 @@ from fastapi import FastAPI
 from sqlalchemy import text
 from app.core.database import engine, Base
 from app.models.user import User
+from app.api.routes import auth
 
 app = FastAPI()
+
+app.include_router(auth.router)
 
 Base.metadata.create_all(bind=engine)
 
