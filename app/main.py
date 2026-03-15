@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from sqlalchemy import text
 from app.core.database import engine, Base
-from app.models.user import User
 from app.api.routes import auth
 
 app = FastAPI()
