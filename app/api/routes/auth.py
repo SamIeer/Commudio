@@ -16,5 +16,8 @@ def register_user_route(user_data: CreateUser,db: db_dependency):
         new_user = register_user(db,user_data)
         return new_user
     except ValueError:
-        raise HTTPException(status_code=400, detail="Email already exist")
+        raise HTTPException(status_code=400, detail="Email already exists")
                 
+@router.post("/login", response_model=User)
+def authenticate_user(user: LoginUser, db:db_dependency):
+    User = repo.verfig
