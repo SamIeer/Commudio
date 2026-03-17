@@ -1,7 +1,8 @@
-from app.schemas.user_schemas import CreateUser, UserResponse
+from app.schemas.user_schemas import CreateUser, UserResponse, LoginRequest
 from app.repositories import user_repository as user_repo
 from sqlalchemy.orm import Session
 from app.core.security import hash_password, verify_password
+from app.models.user import User
 '''why this architecture for tje real production system'''
 '''
 What the service should receive 
@@ -25,3 +26,10 @@ def register_user(db: Session, user_data: CreateUser) -> UserResponse:
     )
     return UserResponse.model_validate(user)
 
+def authenticate_user(db:Session, login_data:LoginRequest)-> User: #ORM:
+    user= user_repo.get_user_by_email(db, login_data.email)
+    if not user :
+        raise ValueError("Invalid Email or Password")
+    if not verify_password(login_data.password, user.hashed_password):
+        raise ValueError("Invalid Email or Password")
+    return user    # Think what did you fetch from DB?
