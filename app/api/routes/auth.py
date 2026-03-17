@@ -4,8 +4,11 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from app.core.database import get_db 
 
-from app.schemas.user_schemas import CreateUser, UserResponse
-from app.services.user_service import register_user
+from app.schemas.user_schemas import CreateUser, UserResponse, LoginRequest
+from app.services.user_service import register_user, authenticate_user
+
+from app.core.security import verify_password, hash_password
+from app.repositories.user_repository import get_user_by_email
 
 router = APIRouter(prefix="/auth")
 db_dependency = Annotated[Session, Depends(get_db)]
@@ -18,6 +21,10 @@ def register_user_route(user_data: CreateUser,db: db_dependency):
     except ValueError:
         raise HTTPException(status_code=400, detail="Email already exists")
                 
-@router.post("/login", response_model=User)
-def authenticate_user(user: LoginUser, db:db_dependency):
-    User = repo.verfig
+@router.post("/login", response_model=UserResponse)
+def log_in(login_data:LoginRequest, db:db_dependency):
+    try:
+        user = authenticate_user(db,LoginRequest)
+        return user 
+    except ValueError:
+        raise HTTPException(status_code="401", detail="user not found")
