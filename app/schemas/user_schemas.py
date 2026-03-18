@@ -23,6 +23,12 @@ class UserResponse(UserBase):
     class Config:
         from_attributes = True
 
+# Login class for user 
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
+# JWT token autherization  class 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
