@@ -21,10 +21,10 @@ def register_user_route(user_data: CreateUser,db: db_dependency):
     except ValueError:
         raise HTTPException(status_code=400, detail="Email already exists")
                 
-@router.post("/login", response_model=UserResponse)
-def log_in(login_data:LoginRequest, db:db_dependency):
+@router.post("/login", response_model=UserResponse, summary="User login")
+def login_user(login_data:LoginRequest, db:db_dependency):
     try:
-        user = authenticate_user(db,LoginRequest)
+        user = authenticate_user(db,login_data)
         return user 
     except ValueError:
-        raise HTTPException(status_code="401", detail="user not found")
+        raise HTTPException(status_code=401, detail="Invalid email or password")
