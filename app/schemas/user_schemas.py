@@ -5,7 +5,7 @@ class UserBase(BaseModel):
     email: EmailStr
     username: str | None 
     
-
+# User creation Registering form 
 class CreateUser(UserBase):
     password: str
     confirm_password: str
@@ -16,6 +16,7 @@ class CreateUser(UserBase):
             raise ValueError("Passwords do not match")
         return v
 
+# User response 
 class UserResponse(UserBase):
     id: int
     created_at: datetime
