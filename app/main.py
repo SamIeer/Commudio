@@ -18,3 +18,5 @@ def db_test():
     with engine.connect() as connection:
         result = connection.execute(text("SELECT 1"))
         return {"db_response": result.scalar()}
+
+@app
