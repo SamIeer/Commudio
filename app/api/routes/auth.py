@@ -28,3 +28,5 @@ def login_user(login_data:LoginRequest, db:db_dependency):
         return user 
     except ValueError:
         raise HTTPException(status_code=401, detail="Invalid email or password")
+
+def jwt_route()
