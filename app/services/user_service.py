@@ -33,3 +33,5 @@ def authenticate_user(db:Session, login_data:LoginRequest)-> User: #ORM:
     if not verify_password(login_data.password, user.hashed_password):
         raise ValueError("Invalid Email or Password")
     return user    # Think what did you fetch from DB?
+
+Def what_to do 
