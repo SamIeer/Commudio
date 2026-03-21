@@ -4,8 +4,8 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from app.core.database import get_db 
 
-from app.schemas.user_schemas import CreateUser, UserResponse, LoginRequest
-from app.services.user_service import register_user, authenticate_user
+from app.schemas.user_schemas import CreateUser, UserResponse, LoginRequest, Token
+from app.services.user_service import register_user, authenticate_create_token
 
 from app.core.security import verify_password, hash_password
 from app.repositories.user_repository import get_user_by_email
@@ -21,12 +21,10 @@ def register_user_route(user_data: CreateUser,db: db_dependency):
     except ValueError:
         raise HTTPException(status_code=400, detail="Email already exists")
                 
-@router.post("/login", response_model=UserResponse, summary="User login")
+@router.post("/login", response_model=Token, summary="User login")
 def login_user(login_data:LoginRequest, db:db_dependency):
     try:
-        user = authenticate_user(db,login_data)
-        return user 
+        access_token = authenticate_create_token(db,login_data)
+        return access_token
     except ValueError:
         raise HTTPException(status_code=401, detail="Invalid email or password")
-
-def jwt_route()
