@@ -3,5 +3,8 @@ uvicorn[standard]
 sqlalchemy
 psycopg2-binary
 pydantic-settings
-python-dotenv
 pydantic[email]
+python-dotenv
+python-jose
+passlib[bcrypt]
+argon2-cffi
