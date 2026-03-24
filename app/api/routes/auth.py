@@ -7,7 +7,7 @@ from app.core.database import get_db
 from app.schemas.user_schemas import CreateUser, UserResponse, LoginRequest, Token
 from app.services.user_service import register_user, authenticate_create_token
 
-from app.core.security import verify_password, hash_password
+from app.core.security import verify_password, hash_password, get_current_user
 from app.repositories.user_repository import get_user_by_email
 
 router = APIRouter(prefix="/auth")
@@ -28,3 +28,4 @@ def login_user(login_data:LoginRequest, db:db_dependency):
         return access_token
     except ValueError:
         raise HTTPException(status_code=401, detail="Invalid email or password")
+
