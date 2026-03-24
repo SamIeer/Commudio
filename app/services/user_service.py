@@ -6,6 +6,7 @@ from app.repositories import user_repository as user_repo
 from app.core.security import hash_password, verify_password, create_access_token
 from app.models.user import User
 
+
 '''why this architecture for tje real production system'''
 '''
 What the service should receive 
@@ -44,5 +45,3 @@ def authenticate_create_token(db:Session, login_data:LoginRequest)->Token:
         "access_token": access_token,
         "token_type": "bearer"
     }
-
-# Now decoding the tokenņ
