@@ -1,0 +1,9 @@
+from fastapi import APIRouter, Depends
+from app.core.security import get_current_user
+from app.schemas.user_schemas import UserResponse
+
+user = APIRouter("/user")
+# for USers 
+@user.get("/me",response_model=UserResponse)
+def get_me(current_user = Depends(get_current_user)):
+    return current_user
