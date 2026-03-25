@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from typing import Annotated
 
 from sqlalchemy.orm import Session
@@ -28,4 +28,13 @@ def login_user(login_data:LoginRequest, db:db_dependency):
         return access_token
     except ValueError:
         raise HTTPException(status_code=401, detail="Invalid email or password")
+
+
+@router.post("/recordings/")
+async def upload_recording(file: UploadFile = File(...), current_user=Depends(get_current_user)):
+    try:
+        contents = await file.read()
+        return {"size": len(contents)}
+    except error as e
+
 
