@@ -31,7 +31,7 @@ def login_user(login_data:LoginRequest, db:db_dependency):
 
 
 @router.post("/recordings/")
-async def upload_recording(file: UploadFile = File(...), current_user=Depends(get_current_user)):
+async def upload_recording(file: UploadFile = File(...), current_user: User=Depends(get_current_user)):
     try:
         contents = await file.read()
         return {"size": len(contents)}
