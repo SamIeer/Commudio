@@ -11,3 +11,14 @@ class User(Base):
     hashed_password = Column(String,nullable=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now()) # DateTime -> defines the column type, server_default=func.now()-> database automatically inserts the current timestamp when a record is created
+
+class Recording(Base):
+    __tablename__ = 'recordings'
+    id = Column(Integer,primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey=True, index=True)
+    status  = Column(String) # (processing / complete / failed)
+    transcript = Column(String)
+    filler_word_count = Column(Integer)
+    words_per_minute = Column(Integer)
+    feedback_text = Column(String)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
