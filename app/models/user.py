@@ -1,5 +1,6 @@
 from app.core.database import Base
-from  sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, func
+from  sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, func, Enum, Text
+from sqlalchemy.orm import relationship
 
 class User(Base):
     __tablename__ = 'users'
@@ -15,10 +16,12 @@ class User(Base):
 class Recording(Base):
     __tablename__ = 'recordings'
     id = Column(Integer,primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey=True, index=True)
-    status  = Column(String) # (processing / complete / failed)
-    transcript = Column(String)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    status  = Column(Enum("processing", "complete", "failed", name="status_enum"), default="processing") # (processing / complete / failed)
+    transcript = Column(Text)
     filler_word_count = Column(Integer)
     words_per_minute = Column(Integer)
-    feedback_text = Column(String)
+    feedback_text = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", back_populates="recordings")
