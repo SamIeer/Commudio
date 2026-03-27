@@ -31,10 +31,20 @@ def login_user(login_data:LoginRequest, db:db_dependency):
 
 
 @router.post("/recordings/")
-async def upload_recording(file: UploadFile = File(...), current_user: User=Depends(get_current_user)):
-    try:
-        contents = await file.read()
-        return {"size": len(contents)}
-    except error as e
+async def upload_recording(file: UploadFile = File(...), current_user: User=Depends(get_current_user), db: Session = Depends(get_db)):
+    content = await file.read()
+
+    # create recoding entry 
+    recording = Recording(
+        user_id = current_user.id,
+        status = "processing"
+    ) # set status'
+
+    return {
+        "filename": file.filename,
+        "content_type": file.content_type,
+        "size": len(content),
+        "user_id": current_user.id
+    }
 
 
