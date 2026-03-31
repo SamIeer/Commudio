@@ -28,13 +28,8 @@ def create_recording_service(db:Session,user_id: int,file: UploadFile):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-    new_recording = Recording(
-        user_id =user_id,
-        status = "",
-        transcript=transcribe
-    )
+    new_recording = create_recording(db,user_id,file)
 
     return new_recording
     #if correct then we give the entrẏ of recording 
     # then return the recordings 
-
