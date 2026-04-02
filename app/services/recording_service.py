@@ -40,5 +40,4 @@ def create_recording_service(db:Session,user_id: int,file: UploadFile):
     new_recording = create_recording(db,user_id,file)
 
     return new_recording
-    #if correct then we give the entrẏ of recording 
-    # then return the recordings 
+    
