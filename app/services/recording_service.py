@@ -3,6 +3,7 @@ import os
 from fastapi import HTTPException, UploadFile, BackgroundTasks
 import tempfile
 
+from app.core.database import SessionLocal
 from sqlalchemy.orm import Session
 from datetime import timedelta
 
