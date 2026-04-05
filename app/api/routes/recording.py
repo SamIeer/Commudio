@@ -95,3 +95,111 @@ async def list_recordings(
             for rec in recordings
         ]
     }
+
+
+'''
+Added Part
+'''
+
+@recording.delete("/recordings/{recording_id}", summary="Delete recording")
+async def delete_recording(
+    recording_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete a recording permanently.
+    
+    This will remove the recording from the database.
+    In V2, this will also delete the audio file from storage.
+    """
+    rec = get_recording_by_id(db, recording_id, current_user.id)
+    
+    if not rec:
+        raise HTTPException(status_code=404, detail="Recording not found")
+    
+    # Delete from database
+    db.delete(rec)
+    db.commit()
+    
+    # TODO V2: Delete from S3/storage if audio_url exists
+    
+    return {
+        "message": "Recording deleted successfully",
+        "recording_id": recording_id
+    }
+ 
+ 
+@recording.get("/recordings/stats/summary", summary="Get user statistics")
+async def get_user_stats(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get aggregate statistics for all user recordings.
+    
+    Returns averages, totals, and trends for dashboard display.
+    """
+    recordings = get_user_recordings(db, current_user.id, skip=0, limit=1000)
+    
+    # Filter only completed recordings for stats
+    completed = [r for r in recordings if r.status == "completed"]
+    
+    if not completed:
+        return {
+            "total_recordings": len(recordings),
+            "completed_recordings": 0,
+            "processing_recordings": len([r for r in recordings if r.status == "processing"]),
+            "failed_recordings": len([r for r in recordings if r.status == "failed"]),
+            "average_wpm": 0,
+            "average_filler_count": 0,
+            "total_practice_time_minutes": 0
+        }
+    
+    # Calculate averages
+    avg_wpm = sum(r.words_per_minute or 0 for r in completed) / len(completed)
+    avg_fillers = sum(r.filler_word_count or 0 for r in completed) / len(completed)
+    total_time = sum(r.duration_seconds or 0 for r in completed)
+    
+    return {
+        "total_recordings": len(recordings),
+        "completed_recordings": len(completed),
+        "processing_recordings": len([r for r in recordings if r.status == "processing"]),
+        "failed_recordings": len([r for r in recordings if r.status == "failed"]),
+        "average_wpm": round(avg_wpm, 1),
+        "average_filler_count": round(avg_fillers, 1),
+        "total_practice_time_minutes": round(total_time / 60, 1)
+    }
+ 
+ 
+@recording.get("/recordings/stats/trend", summary="Get performance trend")
+async def get_performance_trend(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get performance trend over time (for charts in V3 frontend).
+    
+    Returns chronological data for WPM and filler words.
+    """
+    recordings = get_user_recordings(db, current_user.id, skip=0, limit=1000)
+    completed = [r for r in recordings if r.status == "completed"]
+    
+    # Sort by date
+    completed.sort(key=lambda x: x.created_at)
+    
+    trend_data = [
+        {
+            "recording_id": rec.id,
+            "date": rec.created_at.isoformat(),
+            "wpm": rec.words_per_minute,
+            "filler_count": rec.filler_word_count,
+            "duration": rec.duration_seconds
+        }
+        for rec in completed
+    ]
+    
+    return {
+        "trend": trend_data,
+        "total_points": len(trend_data)
+    }
