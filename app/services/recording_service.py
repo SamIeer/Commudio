@@ -1,4 +1,7 @@
 import os 
+import openai 
+import librosa
+
 from fastapi import HTTPException, UploadFile, BackgroundTasks
 import tempfile
 from sqlalchemy.orm import Session
@@ -10,21 +13,39 @@ from app.repositories.recording_repository import create_recording, update_recor
 
 # Dummy transcription function - replace with actual implementation later
 def transcribe_audio(file_path: str) -> str:
-    """Placeholder for actual transcription service (Whisper, AssemblyAI, etc.)"""
-    return "transcribed text example"
+    # """Placeholder for actual transcription service (Whisper, AssemblyAI, etc.)"""
+    # return "transcribed text example"
+    with open(file_path, "rb") as audio_file:
+        transcript = openai.audio.transcriptions("whisper-1", audio_file)
+    return transcript
 
 
 def get_fillers(transcript: str) -> int:
-    """Placeholder for filler word detection - implement with NLP"""
-    # TODO: Implement actual filler word counting (um, uh, like, etc.)
-    return 0
+    # """Placeholder for filler word detection - implement with NLP"""
+    # # TODO: Implement actual filler word counting (um, uh, like, etc.)
+    # return 0
+    filler_words = ['um', 'uh', 'like', 'you know', 'so', 'actually', 'basically']
+    count = 0
+    text_lower = transcript.lower()
+    for filler in filler_words:
+        count += text_lower.count(f"{filler}")
+    return count
 
+'''
+You'll need to pass audio duration from transcription service 
+Or calculate it seperately
+'''
+def get_audio_duration(file_path: str) -> float:
+    duration = librosa.get_duration(path=file_path)
+    return duration
 
-def get_wpm(transcript: str) -> int:
-    """Placeholder for WPM calculation"""
-    # TODO: Implement actual WPM calculation based on audio duration
-    return 120
-
+def get_wpm(transcript: str, audio_duration_seconds: float) -> int:
+    # """Placeholder for WPM calculation"""
+    # # TODO: Implement actual WPM calculation based on audio duration
+    # return 120
+    word_count = len(transcript.split())
+    duration_minutes = audio_duration_seconds / 60
+    return int(word_count / duration_minutes) if duration_minutes > 0 else 0
 
 def process_recording(recording_id: int, file_path: str):
     """Background task to process audio file"""
