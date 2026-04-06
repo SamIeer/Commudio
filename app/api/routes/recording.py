@@ -1,3 +1,4 @@
+from app.models.user import User
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.core.security import get_current_user
@@ -10,7 +11,6 @@ from app.repositories.recording_repository import get_recording_by_id, get_user_
 
 recording = APIRouter()
 
-from app.models.user import User
 
 MAX_FILE_SIZE = 25 * 1024 * 1024  # 25 MB
 ALLOWED_TYPES = (".mp3", ".wav", ".m4a", ".mp4")
