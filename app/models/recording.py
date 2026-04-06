@@ -6,8 +6,8 @@ from app.models.user import User
 
 class Recording(Base):
     __tablename__ = 'recordings'
-    id = Column(Integer,primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    Recording_id = Column(Integer,primary_key=True, index=True)
     status  = Column(Enum("processing", "completed", "failed", name="status_enum"), default="processing") # (processing / complete / failed)
     transcript = Column(Text, nullable=True)
     filler_word_count = Column(Integer, nullable=True)
