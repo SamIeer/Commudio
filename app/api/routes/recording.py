@@ -4,12 +4,13 @@ from app.core.security import get_current_user
 from app.models.recording import Recording
 
 from app.core.database import get_db
-from app.models.user import User
 from app.core.security import get_current_user
 from app.services.recording_service import create_recording_service
 from app.repositories.recording_repository import get_recording_by_id, get_user_recordings
 
 recording = APIRouter()
+
+from app.models.user import User
 
 MAX_FILE_SIZE = 25 * 1024 * 1024  # 25 MB
 ALLOWED_TYPES = (".mp3", ".wav", ".m4a", ".mp4")
@@ -62,7 +63,7 @@ async def get_recording(
         raise HTTPException(status_code=404, detail="Recording not found")
     
     return {
-        "id": recording.id,
+        "recording_id": recording.id,
         "status": recording.status,
         "transcript": recording.transcript,
         "filler_word_count": recording.filler_word_count,
@@ -90,7 +91,8 @@ async def list_recordings(
                 "status": rec.status,
                 "created_at": rec.created_at,
                 "filler_word_count": rec.filler_word_count,
-                "words_per_minute": rec.words_per_minute
+                "words_per_minute": rec.words_per_minute,
+                "feedback_text": rec.feedback_text
             }
             for rec in recordings
         ]
@@ -128,8 +130,8 @@ async def delete_recording(
         "message": "Recording deleted successfully",
         "recording_id": recording_id
     }
- 
- 
+
+
 @recording.get("/recordings/stats/summary", summary="Get user statistics")
 async def get_user_stats(
     current_user: User = Depends(get_current_user),
