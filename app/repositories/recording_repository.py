@@ -20,11 +20,12 @@ def create_recording(db: Session, user_id: int) -> Recording:
 
 
 def update_recording(db: Session, recording_id: int,
+                    status: str | None = None,
                     transcript: str | None = None,
                     filler_word_count: int | None = None,
                     words_per_minute: int | None = None,
                     feedback_text: str | None = None,
-                    status: str | None = None) -> Recording:
+                    ) -> Recording:
     """Update recording fields - only updates provided fields"""
     recording = db.query(Recording).filter(Recording.id == recording_id).first()
     if not recording:
