@@ -47,6 +47,8 @@ def get_wpm(transcript: str, audio_duration_seconds: float) -> int:
     duration_minutes = audio_duration_seconds / 60
     return int(word_count / duration_minutes) if duration_minutes > 0 else 0
 
+def get_feedback(transcript: str) -> str:
+    pass
 def process_recording(recording_id: int, file_path: str):
     """Background task to process audio file"""
     db = SessionLocal()  # Create new session for background task
@@ -58,15 +60,19 @@ def process_recording(recording_id: int, file_path: str):
         # Step 2: Analyze transcript
         filler_word_count = get_fillers(transcript)
         wpm = get_wpm(transcript)
+
+        # step 3: Feedback
+        feedback = get_feedback(transcript)
         
         # Step 3: Update recording with results
         update_recording(
             db,
             recording_id,
+            status="completed",
             transcript=transcript,
             filler_word_count=filler_word_count,
             words_per_minute=wpm,
-            status="completed"
+            feedback_text=feedback
         )
         print(f"Successfully processed recording {recording_id}")
 
