@@ -2,7 +2,7 @@
 from app.core.database import Base
 from  sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, func, Enum, Text
 from sqlalchemy.orm import relationship
-from app.models.user import User
+
 
 class Recording(Base):
     __tablename__ = 'recordings'
