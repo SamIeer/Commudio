@@ -11,4 +11,4 @@ argon2-cffi
 openai # Using whisper
 librosa  # for audio processing 
 pydub # for audio format conversion
-
+python-multipart
