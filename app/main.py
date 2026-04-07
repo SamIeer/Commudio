@@ -1,12 +1,13 @@
 from fastapi import FastAPI
 from sqlalchemy import text
 from app.core.database import engine, Base
-from app.api.routes import auth, users
+from app.api.routes import auth, users,recording
 
 app = FastAPI()
 
 app.include_router(auth.router)
 app.include_router(users.user)
+app.include_router(recording.recording)
 
 Base.metadata.create_all(bind=engine)
 
