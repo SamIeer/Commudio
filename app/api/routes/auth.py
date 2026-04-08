@@ -11,6 +11,7 @@ from app.core.security import verify_password, hash_password, get_current_user
 from app.repositories.user_repository import get_user_by_email
 
 router = APIRouter(prefix="/auth")
+
 db_dependency = Annotated[Session, Depends(get_db)]
 
 @router.post("/register", response_model=UserResponse)
@@ -21,14 +22,30 @@ def register_user_route(user_data: CreateUser,db: db_dependency):
     except ValueError:
         raise HTTPException(status_code=400, detail="Email already exists")
                 
-@router.post("/login", response_model=Token, summary="User login")
-def login_user(login_data:LoginRequest, db:db_dependency):
+# @router.post("/login", response_model=Token, summary="User login")
+# def login_user(login_data:LoginRequest, db:db_dependency):
+#     try:
+#         access_token = authenticate_create_token(db,login_data)
+#         return access_token
+#     except ValueError:
+#         raise HTTPException(status_code=401, detail="Invalid email or password")
+
+
+
+from fastapi import Depends
+from fastapi.security import OAuth2PasswordRequestForm
+
+@router.post("/login", response_model=Token)
+def login_user(
+    db: db_dependency,
+    form_data: OAuth2PasswordRequestForm = Depends()
+):
+    login_data = LoginRequest(
+        email=form_data.username,
+        password=form_data.password
+    )
+
     try:
-        access_token = authenticate_create_token(db,login_data)
-        return access_token
+        return authenticate_create_token(db, login_data)
     except ValueError:
         raise HTTPException(status_code=401, detail="Invalid email or password")
-
-
-
-
