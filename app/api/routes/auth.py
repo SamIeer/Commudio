@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 
 from sqlalchemy.orm import Session
@@ -21,19 +22,6 @@ def register_user_route(user_data: CreateUser,db: db_dependency):
         return new_user
     except ValueError:
         raise HTTPException(status_code=400, detail="Email already exists")
-                
-# @router.post("/login", response_model=Token, summary="User login")
-# def login_user(login_data:LoginRequest, db:db_dependency):
-#     try:
-#         access_token = authenticate_create_token(db,login_data)
-#         return access_token
-#     except ValueError:
-#         raise HTTPException(status_code=401, detail="Invalid email or password")
-
-
-
-from fastapi import Depends
-from fastapi.security import OAuth2PasswordRequestForm
 
 @router.post("/login", response_model=Token)
 def login_user(
