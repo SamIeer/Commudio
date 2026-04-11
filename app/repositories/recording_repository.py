@@ -56,7 +56,7 @@ def update_recording(db: Session, recording_id: int,
 def get_recording_by_id(db: Session, recording_id: int, user_id: int) -> Recording:
     """Get a specific recording for a user"""
     return db.query(Recording).filter(
-        Recording.id == recording_id,
+        Recording.Recording_id == recording_id,
         Recording.user_id == user_id
     ).first()
 
