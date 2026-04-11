@@ -63,7 +63,7 @@ async def get_recording(
         raise HTTPException(status_code=404, detail="Recording not found")
     
     return {
-        "recording_id": recording.id,
+        "recording_id": recording.Recording_id,
         "status": recording.status,
         "transcript": recording.transcript,
         "filler_word_count": recording.filler_word_count,
@@ -87,12 +87,13 @@ async def list_recordings(
         "total": len(recordings),
         "recordings": [
             {
-                "id": rec.id,
+                "id": rec.Recording_id,
                 "status": rec.status,
-                "created_at": rec.created_at,
+                "transcript": rec.transcript,
                 "filler_word_count": rec.filler_word_count,
                 "words_per_minute": rec.words_per_minute,
-                "feedback_text": rec.feedback_text
+                "feedback_text": rec.feedback_text,
+                "created_at": rec.created_at
             }
             for rec in recordings
         ]
@@ -192,7 +193,7 @@ async def get_performance_trend(
     
     trend_data = [
         {
-            "recording_id": rec.id,
+            "recording_id": rec.Recording_id,
             "date": rec.created_at.isoformat(),
             "wpm": rec.words_per_minute,
             "filler_count": rec.filler_word_count,
