@@ -1,5 +1,7 @@
 import os 
-from openai import OpenAI
+import json
+import google.generativeai as genai
+from faster_whisper import WhisperModel
 import librosa
 
 from fastapi import HTTPException, UploadFile, BackgroundTasks
@@ -11,7 +13,17 @@ from app.models.recording import Recording
 from app.repositories.recording_repository import create_recording, update_recording
 
 
-MODE = "mock"
+MODE = "real"
+
+# load model once (IMPORTANT for performance)
+model = None
+
+def get_model():
+    global model
+    if model is None:
+        model = WhisperModel("base", compute_type="int8")
+    return model
+
 
 def transcribe_audio(file_path: str) -> str:
     if MODE == "mock":
@@ -24,9 +36,17 @@ def transcribe_audio(file_path: str) -> str:
         """
 
     elif MODE == "real":
-        # plug OpenAI / Whisper / Gemini later
-        pass
+        print("[REAL] Transcribing audio...")
 
+        model = get_model()
+
+        segments, _ = model.transcribe(file_path)
+
+        # combine all segments into one string
+        full_text = " ".join([segment.text for segment in segments])
+
+        return full_text.strip()
+    
 
 
 def get_fillers(transcript: str) -> int:
@@ -54,8 +74,77 @@ def get_wpm(transcript: str, audio_duration_seconds: float) -> int:
     duration_minutes = audio_duration_seconds / 60
     return int(word_count / duration_minutes) if duration_minutes > 0 else 0
 
-def get_feedback(transcript: str,wpm:int) -> str:
-    pass
+
+'''
+Filler Function 
+'''
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
+model = genai.GenerativeModel("gemini-pro")
+
+
+def get_feedback(transcript: str, wpm: int, fillers: int) -> dict:
+    try:
+        speech_speed = (
+            "fast" if wpm > 160 else
+            "slow" if wpm < 110 else
+            "normal"
+        )
+
+        prompt = f"""
+You are a communication coach.
+
+Analyze the following speech:
+
+Transcript:
+{transcript}
+
+Metrics:
+- Words per minute (WPM): {wpm}
+- Speaking speed: {speech_speed}
+- Filler words used: {fillers}
+
+Instructions:
+1. Provide exactly:
+   - 2 bullet points for "good"
+   - 2 bullet points for "bad"
+   - 2 bullet points for "improve"
+   - A short "overall" summary (2–3 lines)
+
+2. Keep feedback:
+   - Clear and practical
+   - Not generic
+   - Based on the transcript and metrics
+
+3. Return ONLY valid JSON in this format:
+
+{{
+  "good": ["...", "..."],
+  "bad": ["...", "..."],
+  "improve": ["...", "..."],
+  "overall": "..."
+}}
+"""
+
+        response = model.generate_content(prompt)
+
+        text = response.text.strip()
+
+        # 🔧 Clean response (sometimes Gemini adds ```json)
+        if text.startswith("```"):
+            text = text.strip("```json").strip("```").strip()
+
+        return json.loads(text)
+
+    except Exception as e:
+        print(f"[ERROR] Feedback generation failed: {e}")
+        return {
+            "good": [],
+            "bad": [],
+            "improve": [],
+            "overall": "Could not generate feedback."
+        }
+    
 
 def process_recording(
     recording_id: int,
@@ -115,7 +204,7 @@ def process_recording(
         # -------------------------------
         # STEP 4: Feedback
         # -------------------------------
-        feedback = get_feedback(transcript, wpm)
+        feedback = get_feedback(transcript,wpm,filler_word_count)
 
         print(f"[STEP 4] Feedback generated")
         print(f"[DEBUG] Feedback preview: {feedback}...")
