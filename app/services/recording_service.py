@@ -1,5 +1,5 @@
 import os 
-import openai 
+from openai import OpenAI
 import librosa
 
 from fastapi import HTTPException, UploadFile, BackgroundTasks
@@ -11,18 +11,26 @@ from app.models.recording import Recording
 from app.repositories.recording_repository import create_recording, update_recording
 
 
-# Dummy transcription function - replace with actual implementation later
+MODE = "mock"
+
 def transcribe_audio(file_path: str) -> str:
-    # """Placeholder for actual transcription service (Whisper, AssemblyAI, etc.)"""
-    # return "transcribed text example"
-    with open(file_path, "rb") as audio_file:
-        transcript = openai.audio.transcriptions("whisper-1", audio_file)
-    return transcript
+    if MODE == "mock":
+        print("[MOCK] Using fake transcript")
+
+        return """
+        Hello this is a test recording.
+        Um I am trying to check how my application works.
+        Basically this should simulate real speech.
+        """
+
+    elif MODE == "real":
+        # plug OpenAI / Whisper / Gemini later
+        pass
+
 
 
 def get_fillers(transcript: str) -> int:
     # """Placeholder for filler word detection - implement with NLP"""
-    # # TODO: Implement actual filler word counting (um, uh, like, etc.)
     # return 0
     filler_words = ['um', 'uh', 'like', 'you know', 'so', 'actually', 'basically']
     count = 0
@@ -41,55 +49,123 @@ def get_audio_duration(file_path: str) -> float:
 
 def get_wpm(transcript: str, audio_duration_seconds: float) -> int:
     # """Placeholder for WPM calculation"""
-    # # TODO: Implement actual WPM calculation based on audio duration
     # return 120
     word_count = len(transcript.split())
     duration_minutes = audio_duration_seconds / 60
     return int(word_count / duration_minutes) if duration_minutes > 0 else 0
 
-def get_feedback(transcript: str) -> str:
+def get_feedback(transcript: str,wpm:int) -> str:
     pass
-def process_recording(recording_id: int, file_path: str):
-    """Background task to process audio file"""
-    db = SessionLocal()  # Create new session for background task
 
-    try:  
-        # Step 1: Transcribe audio
+def process_recording(
+    recording_id: int,
+    file_path: str,
+    file_size: int = None,
+    original_filename: str = None
+):
+    """Background task to process audio file with detailed debugging"""
+
+    print(f"\n{'='*60}")
+    print(f"🎯 BACKGROUND TASK STARTED")
+    print(f"Recording ID: {recording_id}")
+    print(f"File Path: {file_path}")
+    print(f"Original Filename: {original_filename}")
+    print(f"File Size: {file_size} bytes")
+    print(f"{'='*60}\n")
+
+    db = SessionLocal()
+
+    try:
+        # -------------------------------
+        # STEP 0: Validate file exists
+        # -------------------------------
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
+
+        print(f"[CHECK] File exists ✅")
+
+        # -------------------------------
+        # STEP 1: Get duration
+        # -------------------------------
+        duration = get_audio_duration(file_path)
+        print(f"[STEP 1] Duration: {duration} seconds")
+
+        # -------------------------------
+        # STEP 2: Transcription
+        # -------------------------------
         transcript = transcribe_audio(file_path)
-        
-        # Step 2: Analyze transcript
-        filler_word_count = get_fillers(transcript)
-        wpm = get_wpm(transcript)
 
-        # step 3: Feedback
-        feedback = get_feedback(transcript)
-        
-        # Step 3: Update recording with results
+        if not transcript:
+            raise ValueError("Transcript is empty")
+
+        print(f"[STEP 2] Transcription complete")
+        print(f"[DEBUG] Transcript length: {len(transcript)} chars")
+        print(f"[DEBUG] Preview: {transcript[:100]}...")
+
+        # -------------------------------
+        # STEP 3: Analysis
+        # -------------------------------
+        filler_word_count = get_fillers(transcript)
+        wpm = get_wpm(transcript, duration)
+
+        print(f"[STEP 3] Analysis complete")
+        print(f"[DEBUG] Fillers: {filler_word_count}")
+        print(f"[DEBUG] WPM: {wpm}")
+
+        # -------------------------------
+        # STEP 4: Feedback
+        # -------------------------------
+        feedback = get_feedback(transcript, wpm)
+
+        print(f"[STEP 4] Feedback generated")
+        print(f"[DEBUG] Feedback preview: {feedback}...")
+
+        # -------------------------------
+        # STEP 5: Update DB
+        # -------------------------------
+        print(f"[STEP 5] Updating database...")
+
         update_recording(
-            db,
-            recording_id,
-            status="completed",
+            db=db,
+            recording_id=recording_id,
             transcript=transcript,
             filler_word_count=filler_word_count,
             words_per_minute=wpm,
-            feedback_text=feedback
+            feedback_text=feedback,
+            status="completed"
         )
-        print(f"Successfully processed recording {recording_id}")
+
+        print(f"\n{'='*60}")
+        print(f"✅ SUCCESS: Recording {recording_id} processed")
+        print(f"{'='*60}\n")
 
     except Exception as e:
-        print(f"Processing error for recording {recording_id}:", e)
-        update_recording(
-            db,
-            recording_id,
-            status="failed"
-        )
+        print(f"\n{'='*60}")
+        print(f"❌ ERROR processing recording {recording_id}")
+        print(f"Error: {str(e)}")
+        print(f"{'='*60}\n")
+
+        import traceback
+        traceback.print_exc()
+
+        # Try marking as failed
+        try:
+            update_recording(db, recording_id, status="failed")
+        except Exception as db_error:
+            print(f"[ERROR] Failed to update DB status: {db_error}")
+
     finally:
         db.close()
-        
-        # Important: Cleanup temporary file
-        if os.path.exists(file_path):
-            os.remove(file_path)
-            print(f"Cleaned up temp file: {file_path}")
+
+        # -------------------------------
+        # CLEANUP
+        # -------------------------------
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                print(f"[CLEANUP] Temp file deleted: {file_path}")
+        except Exception as cleanup_error:
+            print(f"[CLEANUP ERROR] {cleanup_error}")
 
 
 async def create_recording_service(
@@ -124,12 +200,12 @@ async def create_recording_service(
     # Add background task to process the recording
     background_tasks.add_task(
         process_recording,
-        recording.id,
+        recording.Recording_id,
         temp_path
     )
     
     return {
-        "recording_id": recording.id,
+        "recording_id": recording.Recording_id,
         "status": "processing",
         "message": "Recording uploaded successfully. Processing in background."
     }

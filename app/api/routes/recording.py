@@ -162,7 +162,7 @@ async def get_user_stats(
     # Calculate averages
     avg_wpm = sum(r.words_per_minute or 0 for r in completed) / len(completed)
     avg_fillers = sum(r.filler_word_count or 0 for r in completed) / len(completed)
-    total_time = sum(r.duration_seconds or 0 for r in completed)
+    # total_time = sum(r.duration_seconds or 0 for r in completed)
     
     return {
         "total_recordings": len(recordings),
@@ -171,7 +171,7 @@ async def get_user_stats(
         "failed_recordings": len([r for r in recordings if r.status == "failed"]),
         "average_wpm": round(avg_wpm, 1),
         "average_filler_count": round(avg_fillers, 1),
-        "total_practice_time_minutes": round(total_time / 60, 1)
+        # "total_practice_time_minutes": round(total_time / 60, 1)
     }
 
 
@@ -197,7 +197,7 @@ async def get_performance_trend(
             "date": rec.created_at.isoformat(),
             "wpm": rec.words_per_minute,
             "filler_count": rec.filler_word_count,
-            "duration": rec.duration_seconds
+            # "duration": rec.duration_seconds
         }
         for rec in completed
     ]

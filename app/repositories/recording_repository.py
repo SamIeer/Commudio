@@ -27,7 +27,7 @@ def update_recording(db: Session, recording_id: int,
                     feedback_text: str | None = None,
                     ) -> Recording:
     """Update recording fields - only updates provided fields"""
-    recording = db.query(Recording).filter(Recording.id == recording_id).first()
+    recording = db.query(Recording).filter(Recording.Recording_id == recording_id).first()
     if not recording:
         raise ValueError("Recording not found")
     
