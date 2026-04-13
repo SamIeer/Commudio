@@ -8,9 +8,12 @@ python-dotenv
 python-jose
 passlib[bcrypt]
 argon2-cffi
-# openai # Using whisper
-librosa  # for audio processing 
-pydub # for audio format conversion
+pydub
 python-multipart
 faster-whisper==1.0.3
-# google-generativeai
+groq
+
+# 🔥 critical fixes
+librosa==0.10.2.post1
+numpy==1.26.4
+scipy==1.11.4
