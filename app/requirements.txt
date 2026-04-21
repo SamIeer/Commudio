@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+pydantic-settings
+pydantic[email]
+python-dotenv
+python-jose
+passlib[bcrypt]
+argon2-cffi
+pydub
+python-multipart
+faster-whisper==1.0.3
+groq
+
+# 🔥 critical fixes
+librosa==0.10.2.post1
