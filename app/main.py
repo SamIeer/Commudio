@@ -5,6 +5,8 @@ from app.api.routes import auth, users,recording
 
 from fastapi.middleware.cors import CORSMiddleware
 
+app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,7 +15,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app = FastAPI()
 
 app.include_router(auth.router)
 app.include_router(users.user)
