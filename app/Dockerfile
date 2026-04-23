@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /code
 
-COPY requirements.txt .
+COPY app/requirements.txt .
 
 RUN pip install --upgrade pip \
     && pip install --prefer-binary -r requirements.txt
