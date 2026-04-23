@@ -1,6 +1,9 @@
 import os 
+from app.core.config import settings
+
 import json
-import google.generativeai as genai
+from groq import Groq
+import time
 from faster_whisper import WhisperModel
 import librosa
 
@@ -14,12 +17,12 @@ from app.repositories.recording_repository import create_recording, update_recor
 
 
 MODE = "real"
+# load model osnce (IMPORTANT for performance)
 
-# load model once (IMPORTANT for performance)
-model = None
 
 def get_model():
-    global model
+    model = None
+    # global model
     if model is None:
         model = WhisperModel("base", compute_type="int8")
     return model
@@ -78,72 +81,97 @@ def get_wpm(transcript: str, audio_duration_seconds: float) -> int:
 '''
 Filler Function 
 '''
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-model = genai.GenerativeModel("gemini-pro")
+
+def safe_parse_json(text: str):
+    try:
+        return json.loads(text)
+    except Exception:
+        return None
+
+
+client = Groq(api_key=settings.api_key)
 
 
 def get_feedback(transcript: str, wpm: int, fillers: int) -> dict:
-    try:
-        speech_speed = (
-            "fast" if wpm > 160 else
-            "slow" if wpm < 110 else
-            "normal"
-        )
+    # Optional safety trim (prevents huge prompts)
+    transcript = transcript[:2000]
+    prompt = f"""
+    You are a communication coach with 50+ years of experience.
 
-        prompt = f"""
-You are a communication coach.
+    Analyze the following speech:
+    {transcript}
 
-Analyze the following speech:
+    Transcr
+    - Filler words used: {fillers}
+    - word per minutes: {wpm}
 
-Transcript:
-{transcript}
+    Instructions:
+    1. Provide exactly:
+    - 2 bullet points for "good"
+    - 2 bullet points for "bad"
+    - 2 bullet points for "improve"
+    - A short "overall" summary (2-3 lines)
 
-Metrics:
-- Words per minute (WPM): {wpm}
-- Speaking speed: {speech_speed}
-- Filler words used: {fillers}
+    2. Keep feedback:
+    - Clear and practical
+    - Not generic
+    - Based on the transcript and metrics
 
-Instructions:
-1. Provide exactly:
-   - 2 bullet points for "good"
-   - 2 bullet points for "bad"
-   - 2 bullet points for "improve"
-   - A short "overall" summary (2–3 lines)
+    3. Return ONLY valid JSON in this format:
 
-2. Keep feedback:
-   - Clear and practical
-   - Not generic
-   - Based on the transcript and metrics
+    {{
+    "good": ["...", "..."],
+    "bad": ["...", "..."],
+    "improve": ["...", "..."],
+    "overall": "..."
+    }}
+    """
+    for attempt in range(2):
+        try:
+            response = client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "Return ONLY valid JSON. No explanation. No markdown."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                temperature=0.3,
+                top_p=0.9
+            )
 
-3. Return ONLY valid JSON in this format:
+            text = response.choices[0].message.content.strip()
 
-{{
-  "good": ["...", "..."],
-  "bad": ["...", "..."],
-  "improve": ["...", "..."],
-  "overall": "..."
-}}
-"""
+            # 🔧 Clean markdown if model adds it
+            if text.startswith("```"):
+                text = text.replace("```json", "").replace("```", "").strip()
 
-        response = model.generate_content(prompt)
+            parsed = safe_parse_json(text)
 
-        text = response.text.strip()
+            if parsed:
+                return parsed
 
-        # 🔧 Clean response (sometimes Gemini adds ```json)
-        if text.startswith("```"):
-            text = text.strip("```json").strip("```").strip()
+        except Exception as e:
+            print(f"[ERROR][Attempt {attempt+1}] {e}")
+            time.sleep(2)  # small backoff
 
-        return json.loads(text)
-
-    except Exception as e:
-        print(f"[ERROR] Feedback generation failed: {e}")
-        return {
-            "good": [],
-            "bad": [],
-            "improve": [],
-            "overall": "Could not generate feedback."
+    # 🔻 fallback response
+    return {
+        "good": [],
+        "bad": [],
+        "improve": [],
+        "overall": "Could not generate feedback.",
+        "scores": {
+            "clarity": 0,
+            "fluency": 0,
+            "confidence": 0
         }
+    }
     
 
 def process_recording(
@@ -204,10 +232,13 @@ def process_recording(
         # -------------------------------
         # STEP 4: Feedback
         # -------------------------------
-        feedback = get_feedback(transcript,wpm,filler_word_count)
+        feedback = get_feedback(transcript, wpm, filler_word_count)
+
+        # ✅ safe for DB
+        feedback_json = json.dumps(feedback)   
 
         print(f"[STEP 4] Feedback generated")
-        print(f"[DEBUG] Feedback preview: {feedback}...")
+        print(f"[DEBUG] Feedback preview: {feedback_json}...")
 
         # -------------------------------
         # STEP 5: Update DB
@@ -220,7 +251,7 @@ def process_recording(
             transcript=transcript,
             filler_word_count=filler_word_count,
             words_per_minute=wpm,
-            feedback_text=feedback,
+            feedback_text=feedback_json,
             status="completed"
         )
 
