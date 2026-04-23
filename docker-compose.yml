@@ -2,30 +2,44 @@ version: "3.9"
 
 services:
   db:
-    image: postgress:15
-    container_name: speech_db
+    image: postgres:15
+    container_name: commudio_db
     restart: always
-    environment:
-      POSTGRES_USER: 
-      POSTGRES_PASSWORD:
-      POSTGRES_DB: cummudio
+    env_file:
+      - ./app/.env
     ports:
       - "5432:5432"
     volumes:
-      - postgress_data:/var/lib/postgresql/postgress_data
+      - postgres_data:/var/lib/postgresql/data
 
   app:
-    build: .
-    container_name: speech_db
-    command: uvcorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: commudio_app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
       - .:/code
     ports:
       - "8000:8000"
     depends_on:
       - db
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/commudio
+    env_file:
+      - ./app/.env
 
-  volumes:
-    postgres_data:
+  frontend:
+    build:
+      context: ./commudio-frontend
+      dockerfile: Dockerfile
+    container_name: commudio_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./commudio-frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host
+    depends_on:
+      - app
+
+volumes:
+  postgres_data:
