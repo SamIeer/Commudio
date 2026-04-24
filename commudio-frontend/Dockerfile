@@ -2,7 +2,7 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY commudio-frontend/package*.json ./
 
 RUN npm install
 
