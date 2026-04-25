@@ -7,11 +7,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+origins = [
+    "postgresql://commudio_db_user:VEdoxj77vlqsgxG6BBKvSYQzusSxIDTW@dpg-d7l52apo3t8c73b5469g-a/commudio_db",
+    "https://commudio.vercel.app",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://commudio.vercel.app"
-    ],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
