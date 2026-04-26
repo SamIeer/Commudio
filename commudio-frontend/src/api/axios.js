@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Use environment variable or default to backend service name in Docker
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://commudio-backend.onrender.com';
+// Use environment variable or default to backend service name in Docker 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
