@@ -3,8 +3,9 @@ from app.core.config import settings
 
 import json
 from groq import Groq
+from openai import OpenAI
 import time
-from faster_whisper import WhisperModel
+# from faster_whisper import WhisperModel
 import librosa
 
 from fastapi import HTTPException, UploadFile, BackgroundTasks
@@ -19,13 +20,22 @@ from app.repositories.recording_repository import create_recording, update_recor
 MODE = "real"
 # load model osnce (IMPORTANT for performance)
 
+# def get_model():
+#     model = None
+#     # global model
+#     if model is None:
+#         model = WhisperModel("base", compute_type="int8")
+#     return model
+
+
+from openai import OpenAI
 
 def get_model():
-    model = None
-    # global model
-    if model is None:
-        model = WhisperModel("base", compute_type="int8")
-    return model
+    client = OpenAI(
+        api_key=settings.transcription_secret_key,
+        base_url="https://api.groq.com/openai/v1"
+    )
+    return client
 
 
 def transcribe_audio(file_path: str) -> str:
@@ -41,14 +51,15 @@ def transcribe_audio(file_path: str) -> str:
     elif MODE == "real":
         print("[REAL] Transcribing audio...")
 
-        model = get_model()
+        client = get_model()
 
-        segments, _ = model.transcribe(file_path)
+        with open(file_path, "rb") as audio_file:
+            result = client.audio.transcriptions.create(
+                model="whisper-large-v3",
+                file=audio_file
+            )
 
-        # combine all segments into one string
-        full_text = " ".join([segment.text for segment in segments])
-
-        return full_text.strip()
+        return result.text.strip()
     
 
 
