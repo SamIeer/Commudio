@@ -10,7 +10,7 @@ passlib[bcrypt]
 argon2-cffi
 pydub
 python-multipart
-faster-whisper==1.0.3
+openai
 groq
 
 # 🔥 critical fixes
