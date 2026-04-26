@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from sqlalchemy import text
+from app.core.config import settings
 from app.core.database import engine, Base
 from app.api.routes import auth, users,recording
 
@@ -8,8 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 
 origins = [
-    "postgresql://commudio_db_user:VEdoxj77vlqsgxG6BBKvSYQzusSxIDTW@dpg-d7l52apo3t8c73b5469g-a/commudio_db",
-    "https://commudio.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:5432",
+    settings.frontend_url,
 ]
 
 app.add_middleware(
