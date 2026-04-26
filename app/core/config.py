@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     secret_key: str
     database_url: str
     api_key: str
+    transcription_secret_key: str
+    frontend_url: str
     algorithm: str = 'HS256'
     
 
