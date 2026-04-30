@@ -33,8 +33,7 @@ Upload a recording and receive:
 
 Designed for students, job seekers, creators, and professionals who want to speak better.
 
-https://github.com/user-attachments/assets/58d3a786-235e-4620-a2b3-bc71f052f30c
-
+https://github.com/user-attachments/assets/816917c2-60c9-4b20-ae3a-1733f8495a2f
 
 ---
 
