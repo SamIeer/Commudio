@@ -33,6 +33,9 @@ Upload a recording and receive:
 
 Designed for students, job seekers, creators, and professionals who want to speak better.
 
+https://github.com/user-attachments/assets/58d3a786-235e-4620-a2b3-bc71f052f30c
+
+
 ---
 
 # ✨ Key Features
@@ -57,6 +60,7 @@ Structured feedback including:
 * Historical performance trends
 * Improvement tracking
 * Practice consistency insights
+<img width="789" height="683" alt="Screenshot 2026-04-29 223418" src="https://github.com/user-attachments/assets/a222011f-0810-4d98-9a63-64696dcc4f3e" />
 
 ## 🔐 Security
 
@@ -65,6 +69,9 @@ Structured feedback including:
 * Protected API routes
 * Environment-based secret management
 * Production CORS configuration
+  <img width="919" height="687" alt="Screenshot 2026-04-29 223320" src="https://github.com/user-attachments/assets/7d28f529-d553-4167-a93d-5620b4f64bf1" />
+<img width="659" height="752" alt="Screenshot 2026-04-29 223237" src="https://github.com/user-attachments/assets/58097630-0460-4d37-9234-23e4a9789b94" />
+
 
 ## ⚡ Performance
 
@@ -81,8 +88,8 @@ Structured feedback including:
 
 | Dashboard | Upload    | Analytics |
 | --------- | --------- | --------- |
-| Add Image | Add Image | Add Image |
-
+| <img width="919" height="687" alt="Screenshot 2026-04-29 223320" src="https://github.com/user-attachments/assets/1c6eb3e6-1a75-4951-b978-a6b08b7eeec6" /> | <img width="925" height="690" alt="Screenshot 2026-04-29 223337" src="https://github.com/user-attachments/assets/03f33b31-5519-40c4-a5d1-be11e45aa459" /> | <img width="789" height="683" alt="Screenshot 2026-04-29 223418" src="https://github.com/user-attachments/assets/963cd330-d041-4586-8c8c-578b24370e2c" />
+ |
 ---
 
 # 🏗️ Tech Stack
